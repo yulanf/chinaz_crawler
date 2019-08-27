@@ -1,31 +1,12 @@
 #!/usr/bin/env python3
+# -*- coding:utf-8 -*-
 
 import requests
 import demjson
-import pymysql
-import redis
 import traceback
 import sys
 import time
 from multiprocessing import Process, Queue
-
-class RedisClient(object):
-    def __init__(self, key, host, password):
-        self.key = key
-        self.r = redis.Redis(host='', password='', decode_responses=True)
-
-    def pop(self):
-        return self.r.spop(self.key)
-
-    def add(self):
-        self.r.sadd(self.key)
-
-    def get_num(self):
-        return self.r.scard(self.key)
-
-
-class MysqlClient(object):
-    pass
 
 
 class GeneralCrawler(object)
@@ -62,7 +43,7 @@ class GeneralCrawler(object)
         # 获取域名
         domain = self.get_domain()
         # 请求网页获取响应
-        get_page
+        self.get_page()
         # 解析
 
         # 保存
