@@ -3,8 +3,16 @@
 from requests_html import AsyncHTMLSession
 from bs4 import BeautifulSoup
 from storage import RedisClient, MysqlClient, MongoClient
+from html.parser import HTMLParser
 import asyncio
 import logging
+
+logging.basicConfig(level=logging.WARNING,  
+                    format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',  
+                    datefmt='%a, %d %b %Y %H:%M:%S',  
+                    # filename='test.log',  
+                    # filemode='w'
+                    )
 
 class PureTextExtractor(HTMLParser):
     # def handle_starttag(self, tag, attrs):
@@ -21,11 +29,12 @@ class PureTextExtractor(HTMLParser):
         parser.feed('<html><head><title>Test</title></head>'
             '<body><h1>Parse me!</h1></body></html><script>script here</script>')
 
+
 class ThemeCrawler(object):
-    def __init__(self, ):
+    def __init__(self, rc, mc):
         self.redis_db = rc
         self.mysql_db = mc
-        self.mongo_db = mc
+        # self.mongo_db = mc
         self.asession = AsyncHTMLSession()
 
     async def get_page(self, url):
@@ -36,7 +45,7 @@ class ThemeCrawler(object):
         Returns:
             r: http响应
         '''
-        r = await self.asession.get(url)
+        r = await self.asession.get(url, timeout=3)
         return r
 
     def parse(self, response):
@@ -49,8 +58,8 @@ class ThemeCrawler(object):
             doc: 所有文字内容
         '''
         html = response.text
-        soup = BeautifulSoup(html, lxml)
-        title = soup.title
+        soup = BeautifulSoup(html, 'lxml')
+        title = soup.title.string 
         doc = soup.get_text()
         return title
 
@@ -62,28 +71,31 @@ class ThemeCrawler(object):
         '''剩余域名数量'''
         return self.redis_db.get_num()
 
-    def save(self):
-        with open('title.txt', 'w') as f:
-            f.write()
+    async def save(self, text):
+        '''保存结果'''
+        with open('title.txt', 'a+') as f:
+            f.write(text)
 
     async def download(self):
-        while get_rest_domain_num():
-            url = get_domain()
-            response = await self.get_page(url)
-            doc = self.parse(response)
-
-            save()
-
+        while self.get_rest_domain_num():
+            url = self.get_domain()
+            logging.info('req ' + url)
+            try:
+                response = await self.get_page(url)
+                response.encoding = response.apparent_encoding
+                logging.info(response.status_code)
+                doc = self.parse(response).strip()
+                await self.save(url + ';' + doc + '\n')
+            except Exception as e:
+                await self.save(url + ';\n')
 
     def start(self):
         # 利用asyncio模块进行异步IO处理
         loop = asyncio.get_event_loop()
         future = asyncio.ensure_future(download())
-        loop.run_until_complete(future)
+        loop.run_until_complete(start())
 
      
-        
-
 class Spider_aio(object):
     def __init__(self):
         pass
@@ -104,5 +116,6 @@ class Spider_aio(object):
 
 
 if __name__ == '__main__':
-    # loop = asyncio.get_event_loop()
-    # loop.run_until_complete(main())
+    tc = ThemeCrawler(RedisClient('url', '127.0.0.1', None), MysqlClient())
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(tc.download())

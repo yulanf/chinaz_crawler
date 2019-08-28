@@ -1,17 +1,44 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 
-from general_crawler import *
+from general_crawler import GeneralCrawler
+from storage import RedisClient, MysqlClient, MongoClient
+import requests
+import aiohttp
+import asyncio
 import logging
+import demjson
+import traceback
+import sys
+import time
 
 class GetIpPv(GeneralCrawler):
-    def __init__():
+    def __init__(self, rc, mc):
+        super(GetIpPv, self).__init__(rc, mc)
         self.ip_url = 'https://alexa.chinaz.com/Handlers/GetAlexaIpNumHandler.ashx'
         self.pv_url = 'https://alexa.chinaz.com/Handlers/GetAlexaPvNumHandler.ashx'
  
-    def get_page(self, url, ):
-        if url[:4] == 'www.':
-            url = url[4:]
+
+    async def aget_page(self, url, domain):
+        if domain[:4] == 'www.':
+            domain = domain[4:]
+        else:
+            pass
+        data = dict(url=domain)
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, data=data) as response:
+                return await response.text()
+
+    def get_page(self, url, domain):
+        '''获取接口数据
+        
+        Args:
+            domain:待查询域名
+        Returns:
+            r.text:接口返回结果
+        '''
+        if domain[:4] == 'www.':
+            domain = domain[4:]
         else:
             pass
         data = dict(url=domain)
@@ -34,24 +61,64 @@ class GetIpPv(GeneralCrawler):
         val = int(resp_list[-1]['data'][field])
         return val
 
-    def crawl():
-        # 获取域名
-        url = self.get_domain()
+    def save(self):
+        pass
+
+    def get_result(self, domain):
         # 请求网页获取响应
-        ip_res = get_page(self.ip_url)
-        pv_res = get_page(self.pv_url)
+        ip_resp = self.get_page(self.ip_url, domain)
+        pv_resp = self.get_page(self.pv_url, domain)
 
         # 解析
-        parse(ip_res, 'IpNum')
-        parse(pv_res, 'PvNum')
-        # 保存
-        save()
+        ip_num = self.parse(ip_resp, 'IpNum')
+        pv_num = self.parse(pv_resp, 'PvNum')
+        return (ip_num, pv_num)
 
-def crawl():
-    while get_domain():
-        get_page('')
-        parse
-        save
+
+    async def aget_result(self, domain):
+        # 爬取页面
+        ip_resp = await self.aget_page(self.ip_url, domain)
+        pv_resp = await self.aget_page(self.pv_url, domain)
+
+        # 解析
+        ip_num = self.parse(ip_resp, 'IpNum')
+        pv_num = self.parse(pv_resp, 'PvNum')
+
+        return (ip_num, pv_num)
+
+def start():
+    '''非协程启动爬虫'''
+    rds = RedisClient('url', '127.0.0.1', None)
+    my = MysqlClient()
+    ip_pv = GetIpPv(rds, my)
+    while ip_pv.get_num():
+
+        domain = ip_pv.get_domain()
+        print(ip_pv.get_result(domain))
+
+async def run():
+    rds = RedisClient('url', '127.0.0.1', None)
+    my = MysqlClient()
+    ip_pv = GetIpPv(rds, my)
+    while ip_pv.get_num():
+
+        domain = ip_pv.get_domain()
+        result = await ip_pv.aget_result(domain)
+        print(result)
+
+        # tasks = []
+        # for i in range(5):
+        #     task = asyncio.ensure_future(ip_pv.aget_result(domain))
+        #     tasks.append(task)
+        # result = event_loop.run_until_complete(asyncio.gather(*tasks))
+        # print(result)
+        # break
+
 if __name__ == '__main__':
-    crawl_ip_pv = GetIpPv(key, host, password)
-    crawl_ip_pv.get_num()
+    # start()
+    event_loop = asyncio.get_event_loop()
+    try:
+        event_loop.run_until_complete(run())
+    finally:
+        event_loop.close()
+    

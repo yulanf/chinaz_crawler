@@ -12,8 +12,8 @@ class RedisClient(object):
     def pop(self):
         return self.r.spop(self.key)
 
-    def add(self):
-        self.r.sadd(self.key)
+    def add(self, item):
+        self.r.sadd(self.key, item)
 
     def get_num(self):
         return self.r.scard(self.key)
@@ -24,5 +24,4 @@ class MysqlClient(object):
 
 class MongoClient(object):
     def __init__(self):
-        
-    def 
+        pass
