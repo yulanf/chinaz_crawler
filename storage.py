@@ -23,10 +23,13 @@ class MysqlClient(object):
     pass
 
 class WebsiteMetricRepo(object):
-    def __init__(self, host, password):
-        pass
+    def __init__(self, host, password, db):
+        self.client = pymongo.MongoClient(host,)
+        # self.db =  client.db
+        # self.collection = db.collection
 
     def insert():
         pass
 
     def update():
+        pass
