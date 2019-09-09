@@ -22,6 +22,11 @@ class RedisClient(object):
 class MysqlClient(object):
     pass
 
-class MongoClient(object):
-    def __init__(self):
+class WebsiteMetricRepo(object):
+    def __init__(self, host, password):
         pass
+
+    def insert():
+        pass
+
+    def update():

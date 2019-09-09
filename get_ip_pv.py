@@ -3,6 +3,7 @@
 
 from general_crawler import GeneralCrawler
 from storage import RedisClient, MysqlClient, MongoClient
+from multiprocessing import Pool
 import requests
 import aiohttp
 import asyncio
@@ -76,6 +77,13 @@ class GetIpPv(GeneralCrawler):
 
 
     async def aget_result(self, domain):
+        '''获取结果
+
+        Args:
+            domain:域名
+        Returns:
+            (ip_num, pv_num):(ip值，pv值) 元组
+        '''
         # 爬取页面
         ip_resp = await self.aget_page(self.ip_url, domain)
         pv_resp = await self.aget_page(self.pv_url, domain)
@@ -106,13 +114,6 @@ async def run():
         result = await ip_pv.aget_result(domain)
         print(result)
 
-        # tasks = []
-        # for i in range(5):
-        #     task = asyncio.ensure_future(ip_pv.aget_result(domain))
-        #     tasks.append(task)
-        # result = event_loop.run_until_complete(asyncio.gather(*tasks))
-        # print(result)
-        # break
 
 if __name__ == '__main__':
     # start()
@@ -121,4 +122,12 @@ if __name__ == '__main__':
         event_loop.run_until_complete(run())
     finally:
         event_loop.close()
+
+
+    # 多进程
+    pool = Pool(processes=10)
+    for i in range():
+        res = pool.apply_async(os.getpid, ())
+
+
     
