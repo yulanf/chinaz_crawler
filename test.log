@@ -1,3 +1,0 @@
-Wed, 28 Aug 2019 09:38:56 selector_events.py[line:65] DEBUG Using selector: KqueueSelector
-Wed, 28 Aug 2019 09:38:56 theme_crawler.py[line:83] INFO reqhttp://www.google.com
-Wed, 28 Aug 2019 09:38:56 connectionpool.py[line:208] DEBUG Starting new HTTP connection (1): www.google.com
