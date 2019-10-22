@@ -6,4 +6,8 @@ REDIS_HOST = {
     'decode_responses': True
 }
 
-SCREEN_SHOT_PATH = os.getcwd() + '/' + 'v4/'
+IPVersion_PATH = os.getcwd() + '/' + 'v4/'
+SCREEN_SHOT_PATH = IPVersion_PATH + 'pic/'
+SRC_PATH = IPVersion_PATH + 'src/'
+NETWORK_LOG_PATH = IPVersion_PATH + 'network/'
+
