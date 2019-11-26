@@ -54,7 +54,7 @@ class GetIpPv(GeneralCrawler):
         r = requests.post(url, data=data)
         return r.text
 
-    def parse(self, page_text, field):
+    async def parse(self, page_text, field):
         '''获取响应中的特定值
 
         站长之家返回的接口数据类型为
@@ -93,19 +93,23 @@ class GetIpPv(GeneralCrawler):
         Returns:
             (ip_num, pv_num):(ip值, pv值) 元组
         '''
-        # 爬取页面
-        logging.info("Send req ip: " + domain)
-        ip_resp = await self.aget_page(self.ip_url, domain)
-        logging.info("Send req pv: " + domain)
-        pv_resp = await self.aget_page(self.pv_url, domain)
+        try:
+            # 爬取页面
+            # logging.info("Send req ip: " + domain)
+            ip_resp = await self.aget_page(self.ip_url, domain)
+            # logging.info("Send req pv: " + domain)
+            pv_resp = await self.aget_page(self.pv_url, domain)
 
-        # 解析
-        ip_num = self.parse(ip_resp, 'IpNum')
-        logging.info('Get res ip: ' + domain + ' ' + ip_num)
-        pv_num = self.parse(pv_resp, 'PvNum')
-        logging.info('Get res pv: ' + domain + ' ' + pv_num)
-
-        return (ip_num, pv_num)
+            # 解析
+            ip_num = await self.parse(ip_resp, 'IpNum')
+            logging.info('Get res ip: ' + domain + ' ' + ip_num)
+            pv_num = await self.parse(pv_resp, 'PvNum')
+            logging.info('Get res pv: ' + domain + ' ' + pv_num)
+        except:
+            ip_num = pv_num = 0
+        
+        finally:
+            return (ip_num, pv_num)
 
     async def download(self):
         '''获取结果并保存到Mongo数据库

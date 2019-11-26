@@ -120,7 +120,7 @@ class ScreenShotSpider(threading.Thread):
             logging.debug('save ' + pic_name)
 
             # 保存源代码
-            page_src_name = SRC_PATH + url + '.src'
+            page_src_name = SRC_PATH + url + '.html'
             with open(page_src_name, 'w') as f1:
                 f1.write(self.browser.page_source)
             logging.debug('save ' + page_src_name)
@@ -160,9 +160,9 @@ class ScreenShotSpider(threading.Thread):
 
     def run(self):
         '''从redis读取url'''
-        while self.r.scard('screenshot'):
-            # url = self.r.srandmember('screenshot')
-            url = self.r.spop('screenshot')
+        while self.r.scard(SCREEN_SHOT_KEY):
+            # url = self.r.srandmember(SCREEN_SHOT_KEY)
+            url = self.r.spop(SCREEN_SHOT_KEY)
             logging.debug(threading.currentThread().getName() + ' ' + url)
             self.get_website_info(url)
         

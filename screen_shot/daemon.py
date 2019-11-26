@@ -15,6 +15,21 @@ def create_folder():
 
 create_folder()
 
+def chck_chrome():
+    '''检查chrome进程
+    检查下有没有异常的chrome进程有就清除
+    '''
+    cp = os.popen('ps -ef | grep chrome| grep -v grep').readlines()
+    if len(cp) != 0:
+        os.system('ps -ef | grep chrome | grep -v grep | awk \'{print $2}\' | xargs kill -9')
+    else:
+        pass
+
+
+def start_pro():
+    os.system('nohup python3 get_page.py f1 >> ' + IPVersion_PATH + 'screenshotv6.log-1 2>&1 &')
+    os.system('nohup python3 get_page.py f2 >> ' + IPVersion_PATH + 'screenshotv6.log-2 2>&1 &')
+
 
 r = redis.Redis(**REDIS_HOST)
 while True:
@@ -27,15 +42,17 @@ while True:
         continue
 
     if len(u) == 1:
-        if 'f1' in u[0]:
-            os.system('nohup python3 get_page.py f2 >> ' + IPVersion_PATH + 'screenshotv6.log-2 2>&1 &')
-        if 'f2' in u[0]: 
-            os.system('nohup python3 get_page.py f1 >> ' + IPVersion_PATH + 'screenshotv6.log-1 2>&1 &')
+        print('recovering')
+        os.system('ps -ef | grep get_page | grep -v grep | awk \'{print $2}\' | xargs kill -9')
+        time.sleep(20)
+        chck_chrome()
+        time.sleep(30)
+        start_pro()
 
     if len(u) == 0:
         print('both break')
-        os.system('nohup python3 get_page.py f1 >> ' + IPVersion_PATH + 'screenshotv6.log-1 2>&1 &')
-        os.system('nohup python3 get_page.py f2 >> ' + IPVersion_PATH + 'screenshotv6.log-2 2>&1 &')
-
+        chck_chrome()
+        start_pro()
         
-    time.sleep(600)
+        
+    time.sleep(5*60)
